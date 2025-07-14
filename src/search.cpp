@@ -1282,7 +1282,7 @@ moves_loop:  // When in check, search starts here
 			// If we are searching the ttMove and it fails far below
 			// alpha, we can reduce the depth of the entire node.
 			if (!PvNode && depth > 10 && move == ttData.move && value < alpha - 200) {
-				depth -= 2;
+				depth--;
 			}
         }
 
