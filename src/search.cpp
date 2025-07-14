@@ -605,20 +605,21 @@ Value Search::Worker::search(
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
     bool  capture, ttCapture;
-    int   priorReduction;
+    int   priorReduction, quietDepthReduction;
     Piece movedPiece;
 
     SearchedList capturesSearched;
     SearchedList quietsSearched;
 
     // Step 1. Initialize node
-    Worker* thisThread = this;
-    ss->inCheck        = pos.checkers();
-    priorCapture       = pos.captured_piece();
-    Color us           = pos.side_to_move();
-    ss->moveCount      = 0;
-    bestValue          = -VALUE_INFINITE;
-    maxValue           = VALUE_INFINITE;
+    Worker* thisThread  = this;
+    ss->inCheck         = pos.checkers();
+    priorCapture        = pos.captured_piece();
+    Color us            = pos.side_to_move();
+    ss->moveCount       = 0;
+    bestValue           = -VALUE_INFINITE;
+    maxValue            = VALUE_INFINITE;
+	quietDepthReduction = 0;
 
     // Check for the available remaining time
     if (is_mainthread())
@@ -1018,6 +1019,9 @@ moves_loop:  // When in check, search starts here
         // Calculate new depth for this move
         newDepth = depth - 1;
 
+		if (!PvNode && !capture && !givesCheck)
+			newDepth -= quietDepthReduction;
+
         int delta = beta - alpha;
 
         Depth r = reduction(improving, depth, moveCount, delta);
@@ -1279,11 +1283,11 @@ moves_loop:  // When in check, search starts here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 3564) - (r > 4969 && newDepth > 2), !cutNode);
 
-			// If we are searching the ttMove and it fails far below
-			// alpha, we can reduce the depth of the entire node.
-			if (!PvNode && depth > 5 && move == ttData.move && value < alpha - 200) {
-				depth -= std::min((alpha - value) / 200, 2);
-			}
+            // If we are searching the ttMove and it fails far below
+            // alpha, we can reduce the depth of the entire node (except noisy moves)
+            if (!PvNode && depth > 5 && move == ttData.move && value < alpha - 200) {
+                quietDepthReduction = std::min((alpha - value) / 200, depth / 2);
+            }
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
