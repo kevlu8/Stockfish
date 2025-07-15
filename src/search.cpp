@@ -1285,9 +1285,9 @@ moves_loop:  // When in check, search starts here
 
             // If we are searching the ttMove and it fails far below
             // alpha, we can reduce the depth of the entire node (except noisy moves)
-            if (!PvNode && depth > 5 && move == ttData.move && value < alpha - 200) {
+            if (!PvNode && depth > 5 && move == ttData.move &&
+				value < alpha - 200 && abs(ttData.value - value) < 150)
                 quietDepthReduction = std::min((alpha - value) / 200, depth / 2);
-            }
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
