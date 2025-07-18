@@ -619,7 +619,7 @@ Value Search::Worker::search(
     ss->moveCount      = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
-	ttMoveFail		   = 0;
+    ttMoveFail		   = 0;
 
     // Check for the available remaining time
     if (is_mainthread())
@@ -1280,8 +1280,8 @@ moves_loop:  // When in check, search starts here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 3564) - (r > 4969 && newDepth > 2), !cutNode);
 
-			if (!PvNode && move == ttData.move && value < alpha - 200 && abs(ttData.value - value) < 200)
-				ttMoveFail = alpha - value;
+            if (!PvNode && move == ttData.move && value < alpha - 200 && abs(ttData.value - value) < 200)
+                ttMoveFail = alpha - value;
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
