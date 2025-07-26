@@ -1262,6 +1262,16 @@ moves_loop:  // When in check, search starts here
             // Note that if expected reduction is high, we reduce search depth here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 3200) - (r > 4600 && newDepth > 2), !cutNode);
+
+			if (!(ttData.bound & BOUND_UPPER) && move == ttData.move && ttData.value - value >= 150) {
+				// If the ttMove did a lot worse than expected (likely due to a tactical refutation),
+				// we can lower the history of this move.
+				const int historyReduction = -(1500 + 2 * (ttData.value - value) / 3);
+				if (capture)
+					captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())] << historyReduction;
+				else
+					mainHistory[us][move.from_to()] << historyReduction;
+			}
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
