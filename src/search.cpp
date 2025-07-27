@@ -1266,7 +1266,7 @@ moves_loop:  // When in check, search starts here
 			if (!(ttData.bound & BOUND_UPPER) && move == ttData.move && ttData.value - value >= 150) {
 				// If the ttMove did a lot worse than expected (likely due to a tactical refutation),
 				// we can lower the history of this move.
-				const int historyReduction = -(1500 + 2 * (ttData.value - value) / 3);
+				const int historyReduction = -(std::min(879 + (ttData.value - value) / 2, 2400));
 				if (capture)
 					captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())] << historyReduction;
 				else
