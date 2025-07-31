@@ -774,6 +774,7 @@ Value Search::Worker::search(
 
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
+    Value      simpleEval = Stockfish::Eval::simple_eval(pos);
     const auto correctionValue      = correction_value(*this, pos, ss);
     if (ss->inCheck)
     {
@@ -1199,6 +1200,10 @@ moves_loop:  // When in check, search starts here
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
             r -= 2043;
+        
+        // Reduce reduction if simpleEval differs a lot from staticEval
+        if (std::abs(simpleEval - ss->staticEval) > 300 && pos.non_pawn_material(us))
+            r -= 1000;
 
         if (capture)
             ss->statScore = 782 * int(PieceValue[pos.captured_piece()]) / 128
