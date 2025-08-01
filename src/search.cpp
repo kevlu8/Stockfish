@@ -613,7 +613,7 @@ Value Search::Worker::search(
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
     bool  capture, ttCapture;
-    int   priorReduction;
+    int   priorReduction, alphaReduction;
     Piece movedPiece;
 
     SearchedList capturesSearched;
@@ -659,6 +659,7 @@ Value Search::Worker::search(
     Square prevSq  = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
     bestMove       = Move::none();
     priorReduction = (ss - 1)->reduction;
+    alphaReduction = 0;
     (ss - 1)->reduction = 0;
     ss->statScore       = 0;
     (ss + 2)->cutoffCnt = 0;
@@ -1010,7 +1011,7 @@ moves_loop:  // When in check, search starts here
         (ss + 1)->quietMoveStreak = (!capture && !givesCheck) ? (ss->quietMoveStreak + 1) : 0;
 
         // Calculate new depth for this move
-        newDepth = depth - 1;
+        newDepth = depth - 1 - alphaReduction;
 
         int delta = beta - alpha;
 
@@ -1360,7 +1361,7 @@ moves_loop:  // When in check, search starts here
 
                 // Reduce other moves if we have found at least one score improvement
                 if (depth > 2 && depth < 16 && !is_decisive(value))
-                    depth -= 2;
+                    alphaReduction += 2;
 
                 assert(depth > 0);
                 alpha = value;  // Update alpha! Always alpha < beta
