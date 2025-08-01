@@ -51,6 +51,17 @@
 
 namespace Stockfish {
 
+int historyBase = -4361;
+int improvingPenalty = 512;
+int ttPvBonus = 128;
+int cutNodePenalty = 256;
+int rDivisor = 20;
+int ttHitBonus = 500;
+int bestMoveBonus = 200;
+
+TUNE(historyBase, improvingPenalty, ttPvBonus, cutNodePenalty, rDivisor,
+     ttHitBonus, bestMoveBonus);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -1071,7 +1082,11 @@ moves_loop:  // When in check, search starts here
                             + pawnHistory[pawn_structure_index(pos)][movedPiece][move.to_sq()];
 
                 // Continuation history based pruning
-                if (history < -4361 * depth)
+                int historyMargin = (historyBase - improving * improvingPenalty + ss->ttPv * ttPvBonus
+                                  + cutNode * cutNodePenalty) * depth + r / rDivisor
+                                  - ss->ttHit * ttHitBonus
+                                  + (bestValue != -VALUE_INFINITE) * bestMoveBonus;
+                if (history < historyMargin)
                     continue;
 
                 history += 71 * mainHistory[us][move.from_to()] / 32;
