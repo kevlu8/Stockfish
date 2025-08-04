@@ -1656,7 +1656,14 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         // Step 7. Make and search the move
         do_move(pos, move, st, givesCheck, ss);
 
-        value = -qsearch<nodeType>(pos, ss + 1, -beta, -alpha);
+        if (moveCount > 2)
+        {
+            value = -qsearch<nodeType>(pos, ss + 1, -alpha - 1, -alpha);
+            if (value > alpha && value < beta)
+                value = -qsearch<nodeType>(pos, ss + 1, -beta, -alpha);
+        }
+        else
+            value = -qsearch<nodeType>(pos, ss + 1, -beta, -alpha);
         undo_move(pos, move);
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
