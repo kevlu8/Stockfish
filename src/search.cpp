@@ -34,6 +34,7 @@
 #include <utility>
 
 #include "bitboard.h"
+#include "cutnet.h"
 #include "evaluate.h"
 #include "history.h"
 #include "misc.h"
@@ -611,7 +612,7 @@ Value Search::Worker::search(
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
     bool  capture, ttCapture;
-    int   priorReduction;
+    int   priorReduction, nPieces;
     Piece movedPiece;
 
     SearchedList capturesSearched;
@@ -624,6 +625,7 @@ Value Search::Worker::search(
     ss->moveCount = 0;
     bestValue     = -VALUE_INFINITE;
     maxValue      = VALUE_INFINITE;
+    nPieces       = pos.count<ALL_PIECES>();
 
     // Check for the available remaining time
     if (is_mainthread())
@@ -772,6 +774,7 @@ Value Search::Worker::search(
 
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
+    Value      mat_eval             = Eval::simple_eval(pos);
     const auto correctionValue      = correction_value(*this, pos, ss);
     if (ss->inCheck)
     {
@@ -950,6 +953,19 @@ Value Search::Worker::search(
                     return value - (probCutBeta - beta);
             }
         }
+    }
+
+    // CutNet
+    if (cutNode && depth <= 3 && !PvNode && !is_decisive(beta) && nPieces >= 12)
+    {
+        bool cnOutput = CutNet::shouldCut(
+            depth, ss->staticEval - beta, ttHit, 
+            ttHit ? (ttData.depth - depth) : 0, 
+            correctionValue, improving, mat_eval - beta
+        );
+
+        if (cnOutput)
+            return beta;
     }
 
 moves_loop:  // When in check, search starts here
