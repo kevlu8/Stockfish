@@ -614,6 +614,7 @@ Value Search::Worker::search(
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
     bool  capture, ttCapture;
+    bool  ttMoveFail;
     int   priorReduction;
     Piece movedPiece;
 
@@ -627,6 +628,7 @@ Value Search::Worker::search(
     ss->moveCount = 0;
     bestValue     = -VALUE_INFINITE;
     maxValue      = VALUE_INFINITE;
+    ttMoveFail    = false;
 
     // Check for the available remaining time
     if (is_mainthread())
@@ -1183,6 +1185,8 @@ moves_loop:  // When in check, search starts here
         if (ttCapture)
             r += 1415;
 
+        r -= 500 * ttMoveFail;
+
         // Increase reduction if next ply has a lot of fail high
         if ((ss + 1)->cutoffCnt > 2)
             r += 1051 + allNode * 814;
@@ -1266,6 +1270,12 @@ moves_loop:  // When in check, search starts here
         undo_move(pos, move);
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
+
+        // A small idea for TT moves
+        if (move == ttData.move && std::abs(value - ttData.value) > std::abs(depth - ttData.depth) * 50
+            && ((ttData.bound & BOUND_EXACT) || ((ttData.bound & BOUND_LOWER) && value < ttData.value)
+                || ((ttData.bound & BOUND_UPPER) && value > ttData.value)))
+            ttMoveFail = true;
 
         // Step 20. Check for a new best move
         // Finished searching the move. If a stop occurred, the return value of
