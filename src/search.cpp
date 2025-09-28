@@ -51,6 +51,12 @@
 
 namespace Stockfish {
 
+int a[] = {
+    2618, 991, 903, 978, 1051, 543, 66, 30450, 3094, 1056, 1415, 500, 1051, 814, 2018, 803, 794, 50
+};
+
+TUNE(a);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -1167,37 +1173,37 @@ moves_loop:  // When in check, search starts here
 
         // Decrease reduction for PvNodes (*Scaler)
         if (ss->ttPv)
-            r -= 2618 + PvNode * 991 + (ttData.value > alpha) * 903
-               + (ttData.depth >= depth) * (978 + cutNode * 1051);
+            r -= a[0] + PvNode * a[1] + (ttData.value > alpha) * a[2]
+               + (ttData.depth >= depth) * (a[3] + cutNode * a[4]);
 
         // These reduction adjustments have no proven non-linear scaling
 
-        r += 543;  // Base reduction offset to compensate for other tweaks
-        r -= moveCount * 66;
-        r -= std::abs(correctionValue) / 30450;
+        r += a[5];  // Base reduction offset to compensate for other tweaks
+        r -= moveCount * a[6];
+        r -= std::abs(correctionValue) / a[7];
 
         // Increase reduction for cut nodes
         if (cutNode)
-            r += 3094 + 1056 * !ttData.move;
+            r += a[8] + a[9] * !ttData.move;
 
         // Increase reduction if ttMove is a capture
         if (ttCapture)
-            r += 1415;
+            r += a[10];
 
-        r -= 500 * ttMoveFail;
+        r -= a[11] * ttMoveFail;
 
         // Increase reduction if next ply has a lot of fail high
         if ((ss + 1)->cutoffCnt > 2)
-            r += 1051 + allNode * 814;
+            r += a[12] + allNode * a[13];
 
         r += (ss + 1)->quietMoveStreak * 50;
 
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
-            r -= 2018;
+            r -= a[14];
 
         if (capture)
-            ss->statScore = 803 * int(PieceValue[pos.captured_piece()]) / 128
+            ss->statScore = a[15] * int(PieceValue[pos.captured_piece()]) / 128
                           + captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())];
         else
             ss->statScore = 2 * mainHistory[us][move.from_to()]
@@ -1205,7 +1211,7 @@ moves_loop:  // When in check, search starts here
                           + (*contHist[1])[movedPiece][move.to_sq()];
 
         // Decrease/increase reduction for moves with a good/bad history
-        r -= ss->statScore * 794 / 8192;
+        r -= ss->statScore * a[16] / 8192;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1273,7 +1279,7 @@ moves_loop:  // When in check, search starts here
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
         // A small idea for TT moves
-        if (move == ttData.move && std::abs(value - ttData.value) > std::abs(depth - ttData.depth) * 50
+        if (move == ttData.move && std::abs(value - ttData.value) > std::abs(depth - ttData.depth) * a[17]
             && ((ttData.bound & BOUND_EXACT) || ((ttData.bound & BOUND_LOWER) && value < ttData.value)
                 || ((ttData.bound & BOUND_UPPER) && value > ttData.value)))
             ttMoveFail = true;
