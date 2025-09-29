@@ -613,7 +613,7 @@ Value Search::Worker::search(
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
-    bool  capture, ttCapture;
+    bool  capture, ttCapture, ttMoveFail;
     int   priorReduction;
     Piece movedPiece;
 
@@ -674,6 +674,7 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
+    ttMoveFail   = false;
 
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
@@ -1266,6 +1267,12 @@ moves_loop:  // When in check, search starts here
         undo_move(pos, move);
 
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
+
+        // A small idea for TT moves
+        if (move == ttData.move && std::abs(value - ttData.value) > std::abs(depth - ttData.depth) * 50
+            && ((ttData.bound & BOUND_EXACT) || ((ttData.bound & BOUND_LOWER) && value < ttData.value)
+                || ((ttData.bound & BOUND_UPPER) && value > ttData.value)))
+            ttMoveFail = true;
 
         // Step 20. Check for a new best move
         // Finished searching the move. If a stop occurred, the return value of
