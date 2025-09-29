@@ -1272,7 +1272,7 @@ moves_loop:  // When in check, search starts here
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
         // A small idea for TT moves
-        if (move == ttData.move && std::abs(value - ttData.value) > std::abs(depth - ttData.depth) * 50
+        if (PvNode && move == ttData.move && std::abs(value - ttData.value) > std::abs(depth - ttData.depth) * 50
             && ((ttData.bound & BOUND_EXACT) || ((ttData.bound & BOUND_LOWER) && value < ttData.value)
                 || ((ttData.bound & BOUND_UPPER) && value > ttData.value)))
             ttMoveFail = true;
