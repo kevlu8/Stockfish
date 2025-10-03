@@ -1168,35 +1168,35 @@ moves_loop:  // When in check, search starts here
 
         // Decrease reduction for PvNodes (*Scaler)
         if (ss->ttPv)
-            r -= 2618 + PvNode * 991 + (ttData.value > alpha) * 903
-               + (ttData.depth >= depth) * (978 + cutNode * 1051);
+            r -= 2596 + PvNode * 996 + (ttData.value > alpha) * 972
+               + (ttData.depth >= depth) * (1029 + cutNode * 1075);
 
         // These reduction adjustments have no proven non-linear scaling
 
-        r += 843;  // Base reduction offset to compensate for other tweaks
-        r -= moveCount * 66;
-        r -= std::abs(correctionValue) / 30450;
+        r += 816;  // Base reduction offset to compensate for other tweaks
+        r -= moveCount * 68;
+        r -= std::abs(correctionValue) / 29950;
 
         // Increase reduction for cut nodes
         if (cutNode)
-            r += 3094 + 1056 * !ttData.move;
+            r += 3177 + 1042 * !ttData.move;
 
         // Increase reduction if ttMove is a capture
         if (ttCapture)
-            r += 1415;
+            r += 1473;
 
-        r -= 500 * ttMoveFail;
+        r -= 517 * ttMoveFail;
 
         // Increase reduction if next ply has a lot of fail high
         if ((ss + 1)->cutoffCnt > 2)
-            r += 1051 + allNode * 814;
+            r += 1078 + allNode * 856;
 
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
-            r -= 2018;
+            r -= 1908;
 
         if (capture)
-            ss->statScore = 803 * int(PieceValue[pos.captured_piece()]) / 128
+            ss->statScore = 769 * int(PieceValue[pos.captured_piece()]) / 128
                           + captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())];
         else
             ss->statScore = 2 * mainHistory[us][move.from_to()]
@@ -1204,7 +1204,7 @@ moves_loop:  // When in check, search starts here
                           + (*contHist[1])[movedPiece][move.to_sq()];
 
         // Decrease/increase reduction for moves with a good/bad history
-        r -= ss->statScore * 794 / 8192;
+        r -= ss->statScore * 799 / 8192;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1272,7 +1272,7 @@ moves_loop:  // When in check, search starts here
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
         // A small idea for TT moves
-        if (move == ttData.move && std::abs(value - ttData.value) > std::abs(depth - ttData.depth) * 50
+        if (move == ttData.move && std::abs(value - ttData.value) > std::abs(depth - ttData.depth) * 49
             && ((ttData.bound & BOUND_EXACT) || ((ttData.bound & BOUND_LOWER) && value < ttData.value)
                 || ((ttData.bound & BOUND_UPPER) && value > ttData.value)))
             ttMoveFail = true;
