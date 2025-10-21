@@ -934,13 +934,16 @@ Value Search::Worker::search(
 
             assert(pos.capture_stage(move));
 
+            bool skipQS = move == ttData.move;
+
             do_move(pos, move, st, ss);
 
             // Perform a preliminary qsearch to verify that the move holds
-            value = -qsearch<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1);
+            if (!skipQS)
+                value = -qsearch<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1);
 
             // If the qsearch held, perform the regular search
-            if (value >= probCutBeta && probCutDepth > 0)
+            if (skipQS || (value >= probCutBeta && probCutDepth > 0))
                 value = -search<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1, probCutDepth,
                                        !cutNode);
 
