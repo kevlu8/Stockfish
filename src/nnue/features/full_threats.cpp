@@ -151,10 +151,7 @@ IndexType FullThreats::make_index(Piece attkr, Square from, Square to, Piece att
         return Dimensions;
     }
 
-    IndexType index =
-      piece_pair_data.feature_index_base() + offsets[attkr][from] + index_lut2[attkr][from][to];
-    sf_assume(index != Dimensions);
-    return index;
+    return piece_pair_data.feature_index_base() + offsets[attkr][from] + index_lut2[attkr][from][to];
 }
 
 // Get a list of indices for active features in ascending order
