@@ -81,11 +81,8 @@ IndexType make_index_with_orientation(Piece attacker,
     if ((piecePairData.excluded_pair_info() + less_than) & 2)
         return FullThreats::Dimensions;
 
-    const IndexType index = piecePairData.feature_index_base() + offsets[attacker][from]
-                          + index_lut2[attacker][from][to];
-
-    sf_assume(index != FullThreats::Dimensions);
-    return index;
+    return piecePairData.feature_index_base() + offsets[attacker][from]
+           + index_lut2[attacker][from][to];
 }
 
 }  // namespace
