@@ -89,6 +89,34 @@ IndexType make_index_with_orientation(Piece attacker,
     return index;
 }
 
+template<Color Perspective>
+void make_index_with_orientation_append(Piece attacker,
+                                      Square from,
+                                      Square to,
+                                      Piece  attacked,
+                                      int     orientation,
+                                      FullThreats::IndexList &active) {
+    from = Square(int(from) ^ orientation);
+    to   = Square(int(to) ^ orientation);
+
+    if constexpr (Perspective == BLACK)
+    {
+        attacker = ~attacker;
+        attacked = ~attacked;
+    }
+
+    const auto piecePairData = index_lut1[attacker][attacked];
+
+    const bool less_than = static_cast<unsigned>(from) < static_cast<unsigned>(to);
+    if ((piecePairData.excluded_pair_info() + less_than) & 2)
+        return;
+
+    const IndexType index = piecePairData.feature_index_base() + offsets[attacker][from]
+                          + index_lut2[attacker][from][to];
+
+    active.push_back(index);
+}
+
 }  // namespace
 
 static void init_index_luts() {
@@ -197,11 +225,8 @@ void FullThreats::append_active_indices(const Position& pos, IndexList& active) 
                     Square    to       = pop_lsb(attacks_left);
                     Square    from     = to - right;
                     Piece     attacked = pos.piece_on(to);
-                    IndexType index = make_index_with_orientation<Perspective>(
-                      attacker, from, to, attacked, orientation);
-
-                    if (index < Dimensions)
-                        active.push_back(index);
+                    make_index_with_orientation_append<Perspective>(
+                      attacker, from, to, attacked, orientation, active);
                 }
 
                 while (attacks_right)
@@ -209,11 +234,8 @@ void FullThreats::append_active_indices(const Position& pos, IndexList& active) 
                     Square    to       = pop_lsb(attacks_right);
                     Square    from     = to - left;
                     Piece     attacked = pos.piece_on(to);
-                    IndexType index = make_index_with_orientation<Perspective>(
-                      attacker, from, to, attacked, orientation);
-
-                    if (index < Dimensions)
-                        active.push_back(index);
+                    make_index_with_orientation_append<Perspective>(
+                      attacker, from, to, attacked, orientation, active);
                 }
             }
             else
@@ -227,11 +249,8 @@ void FullThreats::append_active_indices(const Position& pos, IndexList& active) 
                     {
                         Square    to       = pop_lsb(attacks);
                         Piece     attacked = pos.piece_on(to);
-                        IndexType index = make_index_with_orientation<Perspective>(
-                          attacker, from, to, attacked, orientation);
-
-                        if (index < Dimensions)
-                            active.push_back(index);
+                        make_index_with_orientation_append<Perspective>(
+                          attacker, from, to, attacked, orientation, active);
                     }
                 }
             }
@@ -297,11 +316,8 @@ void FullThreats::append_changed_indices(Square           ksq,
             }
         }
 
-        const IndexType index = make_index_with_orientation<Perspective>(
-          attacker, from, to, attacked, orientation);
-
-        if (index < Dimensions)
-            (add ? added : removed).push_back(index);
+        make_index_with_orientation_append<Perspective>(
+          attacker, from, to, attacked, orientation, add ? added : removed);
     }
 }
 
