@@ -862,7 +862,7 @@ Value Search::Worker::search(
             return futilityMult * d                               //
                  - 2094 * improving * futilityMult / 1024         //
                  - 331 * opponentWorsening * futilityMult / 1024  //
-                 + std::abs(correctionValue) / 158105;
+                 + std::abs(correctionValue) / 120000;
         };
 
         if (!ss->ttPv && depth < 14 && eval - futility_margin(depth) >= beta && eval >= beta
@@ -1121,7 +1121,7 @@ moves_loop:  // When in check, search starts here
 
             if (value < singularBeta)
             {
-                int corrValAdj   = std::abs(correctionValue) / 229958;
+                int corrValAdj   = std::abs(correctionValue) / 180000;
                 int doubleMargin = -4 + 198 * PvNode - 212 * !ttCapture - corrValAdj
                                  - 921 * ttMoveHistory / 127649 - (ss->ply > rootDepth) * 45;
                 int tripleMargin = 76 + 308 * PvNode - 250 * !ttCapture + 92 * ss->ttPv - corrValAdj
@@ -1178,7 +1178,7 @@ moves_loop:  // When in check, search starts here
 
         r += 843;  // Base reduction offset to compensate for other tweaks
         r -= moveCount * 66;
-        r -= std::abs(correctionValue) / 30450;
+        r -= std::abs(correctionValue) / 22000;
 
         // Increase reduction for cut nodes
         if (cutNode)
