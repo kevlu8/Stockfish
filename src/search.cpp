@@ -629,7 +629,7 @@ Value Search::Worker::search(
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
     bool  capture, ttCapture;
-    int   priorReduction;
+    int   priorReduction, reductionTrend;
     Piece movedPiece;
 
     SearchedList capturesSearched;
@@ -675,6 +675,7 @@ Value Search::Worker::search(
     Square prevSq  = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
     bestMove       = Move::none();
     priorReduction = (ss - 1)->reduction;
+    reductionTrend = (ss - 1)->reduction - (ss - 2)->reduction;
     (ss - 1)->reduction = 0;
     ss->statScore       = 0;
     (ss + 2)->cutoffCnt = 0;
@@ -1194,6 +1195,9 @@ moves_loop:  // When in check, search starts here
         // Increase reduction if next ply has a lot of fail high
         if ((ss + 1)->cutoffCnt > 2)
             r += 991 + allNode * 923;
+
+        // Adjust reduction based on prior trend
+        r += std::clamp(reductionTrend + 2, -8, 8) * 400;
 
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
