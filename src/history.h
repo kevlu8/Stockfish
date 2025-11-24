@@ -160,6 +160,8 @@ using CorrectionHistory = typename Detail::CorrHistTypedef<T>::type;
 
 using TTMoveHistory = StatsEntry<std::int16_t, 8192>;
 
+using OrderingHistory = Stats<std::int16_t, 8192, UINT_16_HISTORY_SIZE>;
+
 }  // namespace Stockfish
 
 #endif  // #ifndef HISTORY_H_INCLUDED

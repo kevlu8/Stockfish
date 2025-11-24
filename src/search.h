@@ -293,6 +293,8 @@ class Worker {
 
     TTMoveHistory ttMoveHistory;
 
+    OrderingHistory orderingHistory;
+
    private:
     void iterative_deepening();
 

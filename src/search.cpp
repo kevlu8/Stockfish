@@ -1355,6 +1355,7 @@ moves_loop:  // When in check, search starts here
                 {
                     // (*Scaler) Infrequent and small updates scale well
                     ss->cutoffCnt += (extension < 2) || PvNode;
+                    orderingHistory[posKey & (UINT_16_HISTORY_SIZE - 1)] << 60 - 20 * ss->moveCount;
                     assert(value >= beta);  // Fail high
                     break;
                 }
@@ -1811,12 +1812,13 @@ void update_all_stats(const Position& pos,
                       Move            ttMove,
                       int             moveCount) {
 
-    CapturePieceToHistory& captureHistory = workerThread.captureHistory;
-    Piece                  movedPiece     = pos.moved_piece(bestMove);
+    CapturePieceToHistory& captureHistory  = workerThread.captureHistory;
+    OrderingHistory&       orderingHistory = workerThread.orderingHistory;
+    Piece                  movedPiece      = pos.moved_piece(bestMove);
     PieceType              capturedPiece;
 
-    int bonus = std::min(116 * depth - 81, 1515) + 347 * (bestMove == ttMove);
-    int malus = std::min(848 * depth - 207, 2446) - 17 * moveCount;
+    int bonus = std::min((116 * depth - 81) - orderingHistory[pos.key() & (UINT_16_HISTORY_SIZE - 1)], 1515) + 347 * (bestMove == ttMove);
+    int malus = std::min((848 * depth - 207) - orderingHistory[pos.key() & (UINT_16_HISTORY_SIZE - 1)], 2446) - 17 * moveCount;
 
     if (!pos.capture_stage(bestMove))
     {
