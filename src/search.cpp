@@ -1199,6 +1199,10 @@ moves_loop:  // When in check, search starts here
         if (move == ttData.move)
             r -= 2151;
 
+        // Increase reduction if parent had no ttHit
+        if (!(ss - 1)->ttHit)
+            r += 1024;
+
         if (capture)
             ss->statScore = 868 * int(PieceValue[pos.captured_piece()]) / 128
                           + captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())];
