@@ -802,6 +802,7 @@ Value Search::Worker::search(
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
     const auto correctionValue      = correction_value(*this, pos, ss);
+    bool       ttCorrected          = false;
     if (ss->inCheck)
     {
         // Skip early pruning when in check
@@ -823,7 +824,10 @@ Value Search::Worker::search(
         // ttValue can be used as a better position evaluation
         if (is_valid(ttData.value)
             && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)))
+        {
             eval = ttData.value;
+            ttCorrected = true;
+        }
     }
     else
     {
@@ -885,7 +889,7 @@ Value Search::Worker::search(
     }
 
     // Step 9. Null move search with verification search
-    if (cutNode && ss->staticEval >= beta - 18 * depth + 350 && !excludedMove
+    if (cutNode && eval >= beta - 18 * depth - 40 * ttCorrected + 350 && !excludedMove
         && pos.non_pawn_material(us) && ss->ply >= nmpMinPly && !is_loss(beta))
     {
         assert((ss - 1)->currentMove != Move::null());
