@@ -978,6 +978,11 @@ Value Search::Worker::search(
                     return value - (probCutBeta - beta);
             }
         }
+
+        // If we reach here, ProbCut failed. We can reduce the depth of the entire node,
+        // because we are more confident that the position is not good.
+        if (!PvNode && !ttHit)
+            depth--;
     }
 
 moves_loop:  // When in check, search starts here
