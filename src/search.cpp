@@ -880,7 +880,7 @@ Value Search::Worker::search(
             Value futilityMult = 76 - 23 * !ss->ttHit;
 
             return futilityMult * d
-                 - (2474 * improving + 331 * opponentWorsening) * futilityMult / 1024  //
+                 - (2474 * improving + 331 * opponentWorsening + 400 * cutNode) * futilityMult / 1024  //
                  + std::abs(correctionValue) / 174665;
         };
 
