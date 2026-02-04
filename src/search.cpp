@@ -1228,7 +1228,7 @@ moves_loop:  // When in check, search starts here
             r += r / (depth + 1);
 
         // Step 17. Late moves reduction / extension (LMR)
-        if (depth >= 2 && moveCount > 1 && (capture || ss->statScore < 4000))
+        if (depth >= 2 && moveCount > 1 && (capture || ss->statScore < 16384))
         {
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
