@@ -974,6 +974,10 @@ Value Search::Worker::search(
                 ttWriter.write(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER,
                                probCutDepth + 1, move, unadjustedStaticEval, tt.generation());
 
+                // Also save some info into correction history
+                if (value > ss->staticEval)
+                    update_correction_history(pos, ss, *this, (value - ss->staticEval) * probCutDepth / 16);
+
                 if (!is_decisive(value))
                     return value - (probCutBeta - beta);
             }
