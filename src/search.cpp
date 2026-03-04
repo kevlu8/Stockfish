@@ -954,8 +954,6 @@ Value Search::Worker::search(
             if (move == excludedMove || !pos.legal(move))
                 continue;
 
-            assert(pos.capture_stage(move));
-
             do_move(pos, move, st, ss);
 
             // Perform a preliminary qsearch to verify that the move holds
